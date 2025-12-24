@@ -4,6 +4,8 @@ import numpy as np
 from pymilvus import connections, MilvusClient, FieldSchema, CollectionSchema, DataType, Collection, AnnSearchRequest, RRFRanker
 from pymilvus.model.hybrid import BGEM3EmbeddingFunction
 
+# 强制 Hugging Face 离线模式
+os.environ['HF_HUB_OFFLINE'] = '1'  
 # 设置 Hugging Face 缓存目录
 os.environ['HF_HOME'] = 'E:\\server\\model\\huggingface_cache'
 os.environ['HF_HUB_CACHE'] = 'E:\\server\\model\\huggingface_cache\\hub'
@@ -20,7 +22,10 @@ print(f"--> 正在连接到 Milvus: {MILVUS_URI}")
 connections.connect(uri=MILVUS_URI)
 
 print("--> 正在初始化 BGE-M3 嵌入模型...")
-ef = BGEM3EmbeddingFunction(use_fp16=False, device="cpu")
+ef = BGEM3EmbeddingFunction(
+    model_name="E:/server/model/huggingface_cache/hub/models--BAAI--bge-m3/snapshots/5617a9f61b028005a4858fdac845db406aefb181",
+    use_fp16=False, 
+    device="cpu")
 print(f"--> 嵌入模型初始化完成。密集向量维度: {ef.dim['dense']}")
 
 # 3. 创建 Collection
@@ -63,15 +68,18 @@ if not milvus_client.has_collection(COLLECTION_NAME):
 collection = Collection(COLLECTION_NAME)
 
 # 5. 加载数据并插入
-collection.load()
+print("--> 正在加载 Collection 到内存...")
+milvus_client.load_collection(COLLECTION_NAME)
 print(f"--> Collection '{COLLECTION_NAME}' 已加载到内存。")
 
+print("--> 正在检查 Collection 是否为空...")
 if collection.is_empty:
     print(f"--> Collection 为空，开始插入数据...")
     if not os.path.exists(DATA_PATH):
         raise FileNotFoundError(f"数据文件未找到: {DATA_PATH}")
     with open(DATA_PATH, 'r', encoding='utf-8') as f:
         dataset = json.load(f)
+    print(f"--> JSON 数据加载完成，共 {len(dataset)} 条。")
 
     docs, metadata = [], []
     for item in dataset:
@@ -86,7 +94,7 @@ if collection.is_empty:
         ]
         docs.append(' '.join(filter(None, parts)))
         metadata.append(item)
-    print(f"--> 数据加载完成，共 {len(docs)} 条。")
+    print(f"--> 文档和元数据准备完成，共 {len(docs)} 条。")
 
     print("--> 正在生成向量嵌入...")
     embeddings = ef(docs)
@@ -103,10 +111,13 @@ if collection.is_empty:
     environments = [doc["environment"] for doc in metadata]
     
     # 获取向量
+    print("    --> 获取 sparse_vectors...")
     sparse_vectors = embeddings["sparse"]
+    print("    --> 获取 dense_vectors...")
     dense_vectors = embeddings["dense"]
     
     # 插入数据
+    print("    --> 开始插入数据到 Collection...")
     collection.insert([
         img_ids,
         paths,
@@ -118,9 +129,10 @@ if collection.is_empty:
         sparse_vectors,
         dense_vectors
     ])
-    
-    collection.flush()
-    print(f"--> 数据插入完成，总数: {collection.num_entities}")
+    print("    --> 数据插入完成，跳过 flush（Milvus会自动持久化）...")
+    # yjh:跳过手动flush，Milvus会自动处理,此处会卡住,原因未知,先注释了
+    # collection.flush()  
+    print(f"--> 数据插入完成")
 else:
     print(f"--> Collection 中已有 {collection.num_entities} 条数据，跳过插入。")
 
@@ -208,7 +220,7 @@ for i, hit in enumerate(results):
     print(f"    描述: {hit.entity.get('description')[:100]}...")
 
 # 7. 清理资源
-milvus_client.release_collection(collection_name=COLLECTION_NAME)
-print(f"已从内存中释放 Collection: '{COLLECTION_NAME}'")
-milvus_client.drop_collection(COLLECTION_NAME)
-print(f"已删除 Collection: '{COLLECTION_NAME}'")
+# milvus_client.release_collection(collection_name=COLLECTION_NAME)
+# print(f"已从内存中释放 Collection: '{COLLECTION_NAME}'")
+# milvus_client.drop_collection(COLLECTION_NAME)
+# print(f"已删除 Collection: '{COLLECTION_NAME}'")
