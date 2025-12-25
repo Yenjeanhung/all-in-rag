@@ -4,6 +4,10 @@ import numpy as np
 from pymilvus import connections, MilvusClient, FieldSchema, CollectionSchema, DataType, Collection, AnnSearchRequest, RRFRanker
 from pymilvus.model.hybrid import BGEM3EmbeddingFunction
 
+""" 
+这个是使用本地模型加载的,不从huggingface下载模型
+"""
+
 # 强制 Hugging Face 离线模式
 os.environ['HF_HUB_OFFLINE'] = '1'  
 # 设置 Hugging Face 缓存目录
@@ -13,7 +17,8 @@ os.environ['TRANSFORMERS_CACHE'] = 'E:\\server\\model\\huggingface_cache\\transf
 
 # 1. 初始化设置
 COLLECTION_NAME = "dragon_hybrid_demo"
-MILVUS_URI = "http://192.168.1.161:19530"  # 服务器模式
+# MILVUS_URI = "http://192.168.1.161:19530"
+MILVUS_URI = "http://81.70.243.132:19530"
 DATA_PATH = "../../data/C4/metadata/dragon.json"  # 相对路径
 BATCH_SIZE = 50
 
@@ -23,6 +28,7 @@ connections.connect(uri=MILVUS_URI)
 
 print("--> 正在初始化 BGE-M3 嵌入模型...")
 ef = BGEM3EmbeddingFunction(
+    # 使用本地模型
     model_name="E:/server/model/huggingface_cache/hub/models--BAAI--bge-m3/snapshots/5617a9f61b028005a4858fdac845db406aefb181",
     use_fp16=False, 
     device="cpu")

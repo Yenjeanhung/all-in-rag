@@ -10,11 +10,9 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 # 强制 Hugging Face 离线模式
-# os.environ['HF_HUB_OFFLINE'] = '1'  
+os.environ['HF_HUB_OFFLINE'] = '1'  
 # 设置 Hugging Face 缓存目录
 os.environ['HF_HOME'] = 'E:\\server\\model\\huggingface_cache'
-#os.environ['HF_HUB_CACHE'] = 'E:\\server\\model\\huggingface_cache\\hub'
-#os.environ['TRANSFORMERS_CACHE'] = 'E:\\server\\model\\huggingface_cache\\transformers'
 
 # 1. 初始化视频数据
 video_urls = [
@@ -77,6 +75,8 @@ metadata_field_info = [
         type="integer"
     )
 ]
+
+print(f"DEEPSEEK_API_KEY={os.getenv('DEEPSEEK_API_KEY')}")
 
 # 4. 创建自查询检索器
 llm = ChatDeepSeek(
