@@ -8,10 +8,14 @@ from pymilvus.model.hybrid import BGEM3EmbeddingFunction
 class SimpleKnowledgeBase:
     """知识库"""
     
-    def __init__(self, milvus_uri: str = "http://localhost:19530"):
+    def __init__(self, milvus_uri: str = "http://81.70.243.132:19530"):
         self.milvus_uri = milvus_uri
         self.client = MilvusClient(uri=milvus_uri)
-        self.embedding_function = BGEM3EmbeddingFunction(use_fp16=False, device="cpu")
+        # self.embedding_function = BGEM3EmbeddingFunction(use_fp16=False, device="cpu")
+        self.embedding_function = BGEM3EmbeddingFunction(
+            # yjh：第一次运行请注释它
+            model_name="E:/server/model/huggingface_cache/hub/models--BAAI--bge-m3/snapshots/5617a9f61b028005a4858fdac845db406aefb181",
+            use_fp16=False, device="cpu")
         self.collection_name = "text2sql_kb"
         self._setup_collection()
     
@@ -85,8 +89,8 @@ class SimpleKnowledgeBase:
         types = []
         
         for item in data:
-            content = f"表名: {item.get('table_name', '')}\n"
-            content += f"DDL: {item.get('ddl_statement', '')}\n"
+            content = f"表名: {item.get('table_name', '')}/n"
+            content += f"DDL: {item.get('ddl_statement', '')}/n"
             content += f"描述: {item.get('description', '')}"
             
             contents.append(content)
@@ -100,7 +104,7 @@ class SimpleKnowledgeBase:
         types = []
         
         for item in data:
-            content = f"问题: {item.get('question', '')}\n"
+            content = f"问题: {item.get('question', '')}/n"
             content += f"SQL: {item.get('sql', '')}"
             
             contents.append(content)
@@ -114,14 +118,14 @@ class SimpleKnowledgeBase:
         types = []
         
         for item in data:
-            content = f"表名: {item.get('table_name', '')}\n"
-            content += f"表描述: {item.get('table_description', '')}\n"
+            content = f"表名: {item.get('table_name', '')}/n"
+            content += f"表描述: {item.get('table_description', '')}/n"
             
             columns = item.get('columns', [])
             if columns:
-                content += "字段信息:\n"
+                content += "字段信息:/n"
                 for col in columns:
-                    content += f"  - {col.get('name', '')}: {col.get('description', '')} ({col.get('type', '')})\n"
+                    content += f"  - {col.get('name', '')}: {col.get('description', '')} ({col.get('type', '')})/n"
             
             contents.append(content)
             types.append("description")

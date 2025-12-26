@@ -190,6 +190,7 @@ def cleanup(agent, db_path):
     print("\n清理资源...")
     
     if agent:
+        # 关闭向量库连接，并删除collection
         agent.cleanup()
     
     if os.path.exists(db_path):

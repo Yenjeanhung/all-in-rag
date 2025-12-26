@@ -8,7 +8,7 @@ from .sql_generator import SimpleSQLGenerator
 class SimpleText2SQLAgent:
     """Text2SQL代理"""
     
-    def __init__(self, milvus_uri: str = "http://localhost:19530", api_key: str = None):
+    def __init__(self, milvus_uri: str = "http://81.70.243.132:19530", api_key: str = None):
         """初始化代理"""
         self.knowledge_base = SimpleKnowledgeBase(milvus_uri)
         self.sql_generator = SimpleSQLGenerator(api_key)
@@ -209,5 +209,5 @@ class SimpleText2SQLAgent:
             self.connection = None
             print("数据库连接已关闭")
         
-        self.knowledge_base.cleanup()
+        #self.knowledge_base.cleanup()
         print("知识库已清理") 
