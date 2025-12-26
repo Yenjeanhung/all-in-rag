@@ -71,3 +71,6 @@ rag/
 # LLM API keys
 *.key
 *.secret
+
+# 数据库文件
+*.db
