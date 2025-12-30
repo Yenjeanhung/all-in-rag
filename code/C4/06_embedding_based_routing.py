@@ -15,7 +15,10 @@ route_prompts = [sichuan_route_prompt, cantonese_route_prompt]
 route_names = ["川菜", "粤菜"]
 
 # 初始化嵌入模型，并对路由描述进行向量化
-embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-small-zh-v1.5")
+embeddings = HuggingFaceEmbeddings(
+    # model_name="BAAI/bge-small-zh-v1.5"
+    model_name="E:/server/model/huggingface_cache/hub/models--BAAI--bge-small-zh-v1.5/snapshots/7999e1d3359715c523056ef9478215996d62a620"
+    )
 route_prompt_embeddings = embeddings.embed_documents(route_prompts)
 print(f"已定义 {len(route_names)} 个路由: {', '.join(route_names)}")
 
